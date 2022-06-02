@@ -98,12 +98,15 @@ public class ClientHandler {
                         showServers();
                         break;
                     case 2:
-                        showPVChats();
+                        createServer();
                         break;
                     case 3:
-                        showFriendshipRequests();
+                        showPVChats();
                         break;
                     case 4:
+                        showFriendshipRequests();
+                        break;
+                    case 5:
                         isUserEntered = false;
                         user = null;
                         return;
@@ -217,7 +220,7 @@ public class ClientHandler {
             oOutputStream.writeObject(Request.SERVER_LIST);
             ArrayList<String> servers = (ArrayList<String>) oInputStream.readObject();
             if (servers.size() == 0) {
-                System.out.println("You haven't joined any server yet!");
+                System.out.println("You have no server server in your account yet!");
                 oOutputStream.writeObject(Request.BACK);
                 return;
             }
@@ -246,6 +249,28 @@ public class ClientHandler {
         }
     }
 
+    private void createServer() throws ClassNotFoundException, IOException {
+        scanner.nextLine();
+        while (true) {
+            System.out.println("Enter the name of the server you want to create.");
+            System.out.println("If you want to back, enter -1:\n> ");
+            String serverName = scanner.nextLine();
+            if (serverName.equals("-1")) {
+                return;
+            }
+            oOutputStream.writeObject(Request.CHECK_SERVER_NAME);
+            oOutputStream.writeObject(serverName);
+            boolean isDuplicated = (Boolean) oInputStream.readObject();
+            if (!isDuplicated) {
+                oOutputStream.writeObject(Request.CREATE_SERVER);
+                oOutputStream.writeObject(user);
+                break;
+            } else {
+                oOutputStream.writeObject(Request.BACK);
+                continue;
+            }
+        }
+    }
 
     /**
      * This method gets username and password from the user and then checks if the user is valid or not.
@@ -285,12 +310,9 @@ public class ClientHandler {
         if (isUserNameDuplicate) {
             if (isLogin) {
                 oOutputStream.writeObject(Request.SIGN_IN);
-                System.out.println("before sending the map, we print that: ");
                 System.out.println(userMap);
                 oOutputStream.writeObject(userMap);
                 this.user = (User) oInputStream.readObject(); // setting the user field
-                System.out.println("Username: "+ user.getUsername());
-                System.out.println("password: " + user.getPassword());
                 return 0;
             } else { // for sign up
                 return -2;

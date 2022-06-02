@@ -12,7 +12,6 @@ import CommonClasses.*;
 public class ServerHandler {
 
     private String serverName;
-    private ChannelHandler channelHandler;
     private Socket socket;
     private Scanner scanner = new Scanner(System.in);
     private ObjectInputStream oInputStream;

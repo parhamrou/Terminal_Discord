@@ -1,7 +1,13 @@
-package  CommonClasses;
+package  Discord.Server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.channels.Channel;
 import java.util.ArrayList;
+
+import CommonClasses.Role;
+import CommonClasses.User;
 
 public class Server {
     
@@ -9,6 +15,7 @@ public class Server {
     private ArrayList<Channel> channels;
     private ArrayList<User> users;
     private ArrayList<Role> roles;
+    private ServerSocket serverSocket;
     private final User creator;
 
 
@@ -19,6 +26,29 @@ public class Server {
         channels = new ArrayList<>();
         users = new ArrayList<>();
         roles = new ArrayList<>();
+        try {
+            serverSocket = new ServerSocket(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            e.printStackTrace();
+        }
+    }
+
+
+    public void start() {
+        Socket socket;
+
+        // waiting for a client to connect and pass it to a new thread.
+        while (true) {
+            try {
+                socket = serverSocket.accept();
+                ServerHandler serverHandler = new ServerHandler(this, socket);
+                Thread thread = new Thread(serverHandler);
+                thread.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -49,7 +79,6 @@ public class Server {
     
     /**
      * This method is for creating a new role in the server
-     * @param name
      */
     public void AddRole(Role role) {
         roles.add(role);
@@ -61,5 +90,13 @@ public class Server {
      */
     public void createChannel(Channel channel) {
         channels.add(channel);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getServerPort() {
+        return serverSocket.getLocalPort();
     }
 }

@@ -20,10 +20,11 @@ public class MenuPrinter {
      * This method prints the second menu in which the user has to choose what action does he wants to do.
      */
     public static void printSecondMenu() {
-        System.out.println("1- Servers");
-        System.out.println("2- Personal chats");
-        System.out.println("3- friendship requests");
-        System.out.println("4- Sign out");
+        System.out.println("1- Show servers");
+        System.out.println("2- Create server");
+        System.out.println("3- Personal chats");
+        System.out.println("4- friendship requests");
+        System.out.println("5- Sign out");
         System.out.print("> ");
     }
 
