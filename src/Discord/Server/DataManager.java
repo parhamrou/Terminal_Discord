@@ -35,7 +35,7 @@ public class DataManager {
             readServers();
             runServers();
         } catch (FileNotFoundException e) {
-            System.out.println("There is no file woth this address!");
+            System.out.println("There is no file with this address!");
             e.printStackTrace();
         } catch (IOException e) {
             System.out.println("There is a I/O problem!");
@@ -78,12 +78,13 @@ public class DataManager {
 
     private static void runServers() {
         for (Server server : servers) {
-            server.start();
+            Thread thread = new Thread(server);
+            thread.start();
             // must run the channels either.
         }
     }
 
-    public static boolean isServerNameDuplicated(String serverName) {
+    public synchronized static boolean isServerNameDuplicated(String serverName) {
         for (Server server : servers) {
             if (server.getName().equalsIgnoreCase(serverName)) {
                 return  true;
@@ -93,7 +94,7 @@ public class DataManager {
     }
 
 
-    public static boolean isUserNameDuplicate(String userName) {
+    public synchronized static boolean isUserNameDuplicate(String userName) {
         for (User user : users) {
             if (userName.equalsIgnoreCase(user.getUsername())) {
                 return true;
@@ -102,7 +103,7 @@ public class DataManager {
         return false;
     }
 
-    public static boolean checkUserName(HashMap<String, String> newAccount) {
+    public synchronized static boolean checkUserName(HashMap<String, String> newAccount) {
         String userName = newAccount.get("userName");
         return isUserNameDuplicate(userName);
     }
@@ -123,23 +124,21 @@ public class DataManager {
         return null;
     }
 
-    public static List<Server> getServers() {
+    public synchronized static List<Server> getServers() {
         return servers;
     }
 
 
-    public static List<User> getUsers() {
+    public synchronized static List<User> getUsers() {
         return users;
     }
 
-    private static  boolean addUser(User user) {
+    private synchronized static  boolean addUser(User user) {
         users.add(user);
         return true;
     }
 
-    public static void addServer(Server server) {
+    public synchronized static void addServer(Server server) {
         servers.add(server);
     }
-
-    
 }

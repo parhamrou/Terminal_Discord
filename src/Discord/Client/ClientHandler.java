@@ -19,8 +19,6 @@ public class ClientHandler {
 
     private User user;
     private Socket socket;
-    private PVHandler pvHandler;
-    private ServerHandler serverHandler;
     private ObjectInputStream oInputStream;
     private ObjectOutputStream oOutputStream;
     private Scanner scanner = new Scanner(System.in);
@@ -36,6 +34,7 @@ public class ClientHandler {
             oInputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             System.out.println("There is a problem in opening the streams!");
+            e.printStackTrace();
         }
     }
 
@@ -63,7 +62,7 @@ public class ClientHandler {
                         isUserEntered = enterAccount(false);
                         break;
                     case 3:
-                        isUserEntered = false; 
+                        isUserEntered = false;
                         return;
                 }
                 if (isUserEntered) {
@@ -71,9 +70,11 @@ public class ClientHandler {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Your input is invalid!");
+                scanner.nextLine();
                 continue;
             } catch (IOException e) {
                 System.out.println("There is a IO problem!");
+                e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 System.out.println(e);
             }
@@ -89,7 +90,7 @@ public class ClientHandler {
             MenuPrinter.printSecondMenu();
             try {
                 int choice = scanner.nextInt();
-                if (choice > 4 || choice < 0) {
+                if (choice > 5 || choice < 0) {
                     System.out.println("Your input is invalid!");
                     continue;
                 }
@@ -107,12 +108,14 @@ public class ClientHandler {
                         showFriendshipRequests();
                         break;
                     case 5:
+                        oOutputStream.writeObject(Request.SIGN_OUT);
                         isUserEntered = false;
                         user = null;
                         return;
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Your input is invalid!");
+                scanner.nextLine();
                 continue;
             } catch (IOException e) {
                 System.out.println(e);
@@ -196,7 +199,7 @@ public class ClientHandler {
                 if (isSuccessful) {
                     PVChat pvChat = (PVChat) oInputStream.readObject();
                     int portNumber = (Integer) oInputStream.readObject(); // getting the port number of the server from the server
-                    pvHandler = new PVHandler(pvChat, portNumber);
+                    PVHandler pvHandler = new PVHandler(pvChat, portNumber);
                     pvHandler.start();   
                 } 
             }   
@@ -224,8 +227,13 @@ public class ClientHandler {
                 oOutputStream.writeObject(Request.BACK);
                 return;
             }
+            // showing the list of the servers
+            for (String string : servers) {
+                System.out.println("- " + string);
+            }
+            scanner.nextLine();
             for (String server : servers) {
-                System.out.println("Enter the name of the server you want to enter. If you want back, enter -1\n> ");
+                System.out.print("Enter the name of the server you want to enter. If you want back, enter -1\n> ");
                 String serverName = scanner.nextLine();
                 if (serverName.equals("-1")) {
                     oOutputStream.writeObject(Request.BACK);
@@ -236,7 +244,7 @@ public class ClientHandler {
                 boolean isSuccessful = (boolean) oInputStream.readObject();
                 if (isSuccessful) {
                     int portNumber = (Integer) oInputStream.readObject(); // getting the port numebr of the server from the server
-                    serverHandler = new ServerHandler(serverName, portNumber);
+                    ServerHandler serverHandler = new ServerHandler(serverName, portNumber);
                     serverHandler.start();   
                 } 
             }   
@@ -253,7 +261,7 @@ public class ClientHandler {
         scanner.nextLine();
         while (true) {
             System.out.println("Enter the name of the server you want to create.");
-            System.out.println("If you want to back, enter -1:\n> ");
+            System.out.print("If you want to back, enter -1:\n> ");
             String serverName = scanner.nextLine();
             if (serverName.equals("-1")) {
                 return;
@@ -264,6 +272,7 @@ public class ClientHandler {
             if (!isDuplicated) {
                 oOutputStream.writeObject(Request.CREATE_SERVER);
                 oOutputStream.writeObject(user);
+                System.out.println("Now the server is created!");
                 break;
             } else {
                 oOutputStream.writeObject(Request.BACK);
@@ -310,7 +319,6 @@ public class ClientHandler {
         if (isUserNameDuplicate) {
             if (isLogin) {
                 oOutputStream.writeObject(Request.SIGN_IN);
-                System.out.println(userMap);
                 oOutputStream.writeObject(userMap);
                 this.user = (User) oInputStream.readObject(); // setting the user field
                 return 0;

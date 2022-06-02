@@ -1,8 +1,9 @@
 package  CommonClasses;
 
+import java.io.*;
 import java.time.LocalDateTime;
 
-public class Message {
+public class Message implements Serializable {
     
     private User user;
     private String text;

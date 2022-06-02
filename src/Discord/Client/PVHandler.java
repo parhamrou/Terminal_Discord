@@ -1,8 +1,6 @@
 package  Discord.Client;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -11,7 +9,7 @@ import CommonClasses.*;
 /**
  * This class is for handling one PV chat and showing its options when a user is working with that.
  */
-public class PVHandler {
+public class PVHandler implements Serializable {
     
     private PVChat pvChat;
     private Socket socket;
@@ -28,6 +26,7 @@ public class PVHandler {
             oInputStream = new ObjectInputStream(socket.getInputStream());
             outputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -93,6 +92,7 @@ public class PVHandler {
             }
         } catch (IOException e) {
             System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -109,6 +109,7 @@ public class PVHandler {
             outputStream.close();
         } catch (IOException e) {
             System.out.println(e);
+            e.printStackTrace();
         }
     }
 

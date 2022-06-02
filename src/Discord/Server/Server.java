@@ -1,6 +1,6 @@
-package  Discord.Server;
+package Discord.Server;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Channel;
@@ -8,16 +8,16 @@ import java.util.ArrayList;
 
 import CommonClasses.Role;
 import CommonClasses.User;
+import Discord.Server.*;
 
-public class Server {
+public class Server implements Runnable, Serializable {
     
     private String name;
     private ArrayList<Channel> channels;
     private ArrayList<User> users;
     private ArrayList<Role> roles;
-    private ServerSocket serverSocket;
     private final User creator;
-
+    private int serverPortNumber;
 
     // constructor
     public Server(String name, User creator) {
@@ -26,28 +26,29 @@ public class Server {
         channels = new ArrayList<>();
         users = new ArrayList<>();
         roles = new ArrayList<>();
+    }
+
+    @Override
+    public void run() {
+        Socket socket;
+        System.out.println("Now the server '" + name + "' is listening...");
         try {
-            serverSocket = new ServerSocket(0);
+            ServerSocket serverSocket = new ServerSocket(0);
+            serverPortNumber = serverSocket.getLocalPort();
+            // waiting for a client to connect and pass it to a new thread.
+            while (true)  {
+                try {
+                    socket = serverSocket.accept();
+                    System.out.println("Now a client is connected to the server '" + name + "' with port number: " + socket.getPort());
+                    ServerHandler serverHandler = new ServerHandler(this, socket);
+                    new Thread(serverHandler).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         } catch (IOException e) {
             System.out.println(e);
             e.printStackTrace();
-        }
-    }
-
-
-    public void start() {
-        Socket socket;
-
-        // waiting for a client to connect and pass it to a new thread.
-        while (true) {
-            try {
-                socket = serverSocket.accept();
-                ServerHandler serverHandler = new ServerHandler(this, socket);
-                Thread thread = new Thread(serverHandler);
-                thread.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -97,6 +98,6 @@ public class Server {
     }
 
     public int getServerPort() {
-        return serverSocket.getLocalPort();
+        return serverPortNumber;
     }
 }

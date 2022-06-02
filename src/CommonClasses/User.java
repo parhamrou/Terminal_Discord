@@ -1,9 +1,9 @@
 package  CommonClasses;
 
+import Discord.Server.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-
-import Discord.Server.Server;
 
 public class User implements Serializable{
 

@@ -33,6 +33,7 @@ public class ChannelHandler {
             oInputStream = new ObjectInputStream(socket.getInputStream());   
         } catch (IOException e) {
             System.out.println("There is a problem in opening the streams!");
+            e.printStackTrace();
         }
     }
 
@@ -55,8 +56,10 @@ public class ChannelHandler {
                     }
                 } catch (IOException e) {
                     System.out.println(e);
+                    e.printStackTrace();
                 } catch (ClassNotFoundException e) {
                     System.out.println(e);
+                    e.printStackTrace();
                 } catch (InputMismatchException e) {
                     System.out.println("You have to enter an integer value!");
                     continue;
@@ -84,6 +87,7 @@ public class ChannelHandler {
             }
         } catch (IOException e) {
             System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -104,6 +108,7 @@ public class ChannelHandler {
             outputStream.close();
         } catch (IOException e) {
             System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -122,6 +127,7 @@ public class ChannelHandler {
                     serverReader();
                 } catch (ClassNotFoundException e) {
                     System.out.println(e);
+                    e.printStackTrace();
                 }     
             }
         });

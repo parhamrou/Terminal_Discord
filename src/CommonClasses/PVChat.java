@@ -1,14 +1,13 @@
 package  CommonClasses;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 
-public class PVChat {
+public class PVChat implements Serializable {
 
     private User user1;
     private User user2;
     private ArrayList<Message> messages;
-    private ArrayList<File> files;
     private boolean isUser1Blocked = false;
     private boolean isUser2Blocked = false;
 
@@ -17,7 +16,6 @@ public class PVChat {
     public PVChat(User user1, User user2) {
         this.user1 = user1;
         this.user2 = user2;
-        files = new ArrayList<>();
         messages = new ArrayList<>();
     }
 

@@ -12,6 +12,7 @@ public class Main {
             clientHandler.start();
         } catch (IOException e) {
             System.out.println("There is a problem in your connection!");
-        } 
+            e.printStackTrace();
+        }
     }
 }

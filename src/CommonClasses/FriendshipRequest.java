@@ -1,8 +1,9 @@
 package  CommonClasses;
 
+import java.io.*;
 import java.time.LocalDateTime;
 
-public class FriendshipRequest {
+public class FriendshipRequest implements Serializable {
 
     private LocalDateTime date;
     private User destinationUser;

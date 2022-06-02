@@ -1,15 +1,13 @@
 package  Discord.Client;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import CommonClasses.*;
 
-public class ServerHandler {
+public class ServerHandler implements Serializable {
 
     private String serverName;
     private Socket socket;

@@ -1,15 +1,14 @@
 package  CommonClasses;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 
-public abstract class Channel {
+public abstract class Channel implements Serializable {
     
     private String name;
     private ArrayList<User> users;
     private ArrayList<Message> messages;
     private ArrayList<Message> pinnedMessages;
-    private ArrayList<File> files;
     
     // constructor
     public Channel(String name) {
@@ -17,7 +16,6 @@ public abstract class Channel {
         users = new ArrayList<>();
         messages = new ArrayList<>();
         pinnedMessages = new ArrayList<>();
-        files = new ArrayList<>();
     }
 
 
@@ -34,6 +32,4 @@ public abstract class Channel {
     public String getName() {
         return name;
     }
-
-    
 }

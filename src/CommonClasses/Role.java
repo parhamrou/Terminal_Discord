@@ -1,6 +1,8 @@
 package  CommonClasses;
 
-public class Role {
+import java.io.*;
+
+public class Role implements Serializable {
 
     private String name;
     // capabalities

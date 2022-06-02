@@ -1,6 +1,8 @@
 package  CommonClasses;
 
-public enum Request {
+import java.io.*;
+
+public enum Request implements Serializable {
     CHECK_USERNAME,
     SIGN_IN,
     SIGN_UP,
@@ -21,4 +23,5 @@ public enum Request {
     CREATE_SERVER,
     CREATE_CHANNEL,
     CHECK_SERVER_NAME,
+    SIGN_OUT,
 }

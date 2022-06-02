@@ -20,6 +20,7 @@ public class ClientHandler implements Runnable {
             oInputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             System.out.println("I/O Error!");
+            e.printStackTrace();
         }
     }
 
@@ -29,8 +30,9 @@ public class ClientHandler implements Runnable {
             Request clientRequest;
             HashMap<String, String> userMap;
             while (true) {
+                System.out.println("Waiting for a request from the user "  + "...");
                 clientRequest = (Request) oInputStream.readObject();
-                System.out.println(clientRequest.toString());
+                System.out.println("Request: " + clientRequest.toString());
                 switch (clientRequest) {
                     case CHECK_USERNAME:
                         userMap = (HashMap<String, String>) oInputStream.readObject();
@@ -44,6 +46,9 @@ public class ClientHandler implements Runnable {
                         userMap = (HashMap<String, String>) oInputStream.readObject();
                         user = DataManager.signIn(userMap);
                         oOutputStream.writeObject(user);
+                        break;
+                    case SIGN_OUT:
+                        user = null;
                         break;
                     case SERVER_LIST:
                         oOutputStream.writeObject(user.getServersNames());
@@ -64,8 +69,9 @@ public class ClientHandler implements Runnable {
                         if (request == Request.CREATE_SERVER) {
                             User user = (User) oInputStream.readObject();
                             Server server = new Server(serverName, user);
-                            DataManager.addServer(server);
-                            server.start();
+                            DataManager.addServer(server); // adding the new server to the Database
+                            user.addServer(server); // adding the new server to the user's servers list
+                            new Thread(server).start();
                         }
                         break;
                 }
