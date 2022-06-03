@@ -3,29 +3,31 @@ package Discord.Server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.channels.Channel;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.concurrent.*;
 
 import CommonClasses.Role;
 import CommonClasses.User;
-import Discord.Server.*;
+import CommonClasses.Channel;
+
 
 public class Server implements Runnable, Serializable {
     
     private String name;
-    private ArrayList<Channel> channels;
-    private ArrayList<User> users;
-    private ArrayList<Role> roles;
+    private List<Channel> channels;
+    private List<User> users;
+    private List<Role> roles;
     private final User creator;
     private int serverPortNumber;
+
 
     // constructor
     public Server(String name, User creator) {
         this.name = name;
         this.creator = creator;
-        channels = new ArrayList<>();
-        users = new ArrayList<>();
-        roles = new ArrayList<>();
+        channels = Collections.synchronizedList(new ArrayList<>());
+        users = Collections.synchronizedList(new ArrayList<>());
+        roles = Collections.synchronizedList(new ArrayList<>());
     }
 
     @Override
@@ -35,13 +37,13 @@ public class Server implements Runnable, Serializable {
         try {
             ServerSocket serverSocket = new ServerSocket(0);
             serverPortNumber = serverSocket.getLocalPort();
+            ExecutorService executorService = Executors.newCachedThreadPool();
             // waiting for a client to connect and pass it to a new thread.
             while (true)  {
                 try {
                     socket = serverSocket.accept();
                     System.out.println("Now a client is connected to the server '" + name + "' with port number: " + socket.getPort());
-                    ServerHandler serverHandler = new ServerHandler(this, socket);
-                    new Thread(serverHandler).start();
+                    executorService.execute(new ServerHandler(this, socket));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -89,15 +91,57 @@ public class Server implements Runnable, Serializable {
     /**
      * This method is for adding a new channel in the server.
      */
-    public void createChannel(Channel channel) {
+    public void addChannel(Channel channel) {
         channels.add(channel);
     }
 
+    public void runChannels() {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        for (Channel channel : channels) {
+            executorService.execute(channel);
+        }
+    }
     public String getName() {
         return name;
     }
 
     public int getServerPort() {
         return serverPortNumber;
+    }
+
+    public ArrayList<String> getChannelsNames() {
+        ArrayList<String> names = new ArrayList<>();
+        for (Channel channel : channels) {
+            names.add(channel.getName());
+        }
+        return names;
+    }
+
+
+    public boolean doesChannelExist(String channelName) {
+        for (Channel channel : channels) {
+            if (channel.getName().equalsIgnoreCase(channelName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getChannelPortNumber(String channelName) {
+        for (Channel channel : channels) {
+            if (channel.getName().equalsIgnoreCase(channelName)) {
+                return  channel.getServerPortNumber();
+            }
+        }
+        return -1;
+    }
+
+    public boolean isChannelNameDuplicated(String channelName) {
+        for (Channel channel : channels) {
+            if (channel.getName().equalsIgnoreCase(channelName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

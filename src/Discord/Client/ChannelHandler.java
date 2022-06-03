@@ -25,10 +25,10 @@ public class ChannelHandler {
 
     
     // constructor
-    public ChannelHandler(Socket socket, User user) {
-        this.socket = socket;
+    public ChannelHandler(int portNumber, User user) {
         this.user = user;
         try {
+            socket = new Socket("localhost", portNumber);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             oInputStream = new ObjectInputStream(socket.getInputStream());   
         } catch (IOException e) {

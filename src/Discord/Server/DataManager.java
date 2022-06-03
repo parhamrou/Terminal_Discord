@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.*;
 
 import CommonClasses.*;
 
@@ -77,10 +78,10 @@ public class DataManager {
     }
 
     private static void runServers() {
+        ExecutorService executorService = Executors.newCachedThreadPool();
         for (Server server : servers) {
-            Thread thread = new Thread(server);
-            thread.start();
-            // must run the channels either.
+            executorService.execute(server); // running the server
+            server.runChannels(); // running the server's channels
         }
     }
 

@@ -6,11 +6,10 @@ public enum Request implements Serializable {
     CHECK_USERNAME,
     SIGN_IN,
     SIGN_UP,
-    SHOW_CHANNELS,
+    CHANNEL_LIST,
     ENTER_CHANNEL,
     LOAD_CHANNEL,
     LOAD_PV,
-    CHECK_VALIDITY,
     SERVER_LIST,
     ENTER_SERVER,
     PV_LIST,
@@ -24,4 +23,5 @@ public enum Request implements Serializable {
     CREATE_CHANNEL,
     CHECK_SERVER_NAME,
     SIGN_OUT,
+    CHECK_CHANNEL_NAME,
 }

@@ -23,7 +23,6 @@ public class ClientHandler {
     private ObjectOutputStream oOutputStream;
     private Scanner scanner = new Scanner(System.in);
     private boolean isUserEntered;
-    private Console console = System.console();
 
     // constructor
     public ClientHandler(Socket socket) {
@@ -232,22 +231,23 @@ public class ClientHandler {
                 System.out.println("- " + string);
             }
             scanner.nextLine();
-            for (String server : servers) {
-                System.out.print("Enter the name of the server you want to enter. If you want back, enter -1\n> ");
-                String serverName = scanner.nextLine();
-                if (serverName.equals("-1")) {
-                    oOutputStream.writeObject(Request.BACK);
-                    return;
-                }
-                oOutputStream.writeObject(Request.ENTER_SERVER); // sending request
-                oOutputStream.writeObject(serverName); // sending server name
-                boolean isSuccessful = (boolean) oInputStream.readObject();
-                if (isSuccessful) {
-                    int portNumber = (Integer) oInputStream.readObject(); // getting the port numebr of the server from the server
-                    ServerHandler serverHandler = new ServerHandler(serverName, portNumber);
-                    serverHandler.start();   
-                } 
-            }   
+            System.out.print("Enter the name of the server you want to enter. If you want back, enter -1\n> ");
+            String serverName = scanner.nextLine();
+            if (serverName.equals("-1")) {
+                oOutputStream.writeObject(Request.BACK);
+                return;
+            }
+            oOutputStream.writeObject(Request.ENTER_SERVER); // sending request
+            oOutputStream.writeObject(serverName); // sending server name
+            boolean isSuccessful = (boolean) oInputStream.readObject();
+            if (isSuccessful) {
+                int portNumber = (Integer) oInputStream.readObject(); // getting the port numebr of the server from the server
+                ServerHandler serverHandler = new ServerHandler(user, serverName, portNumber);
+                System.out.println("After creating ServerHandler!");
+                serverHandler.start();
+            } else {
+                System.out.println("There is no server with this name!");
+            }
         } catch (IOException e) {
             System.out.println(e);
             e.printStackTrace();
