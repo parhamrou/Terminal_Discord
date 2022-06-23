@@ -3,7 +3,7 @@ package  CommonClasses;
 import Discord.Server.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.*;
 
 public class User implements Serializable{
 
@@ -14,6 +14,7 @@ public class User implements Serializable{
     private String status;
     private ArrayList<Server> servers;
     private ArrayList<User> friends;
+    private List<FriendshipRequest> friendshipRequests;
 
     
     // constructor
@@ -24,6 +25,7 @@ public class User implements Serializable{
         this.phoneNumber = phoneNumber;
         friends = new ArrayList<>();
         servers = new ArrayList<>();
+        friendshipRequests = Collections.synchronizedList(new ArrayList<>());
     }
 
 
@@ -31,7 +33,9 @@ public class User implements Serializable{
      * This method is for showing the list of the friends of the user.
      */
     public void showFriends() {
-
+        for (User user : friends) {
+            System.out.println("- " + user.getUsername());
+        }
     }
 
 
@@ -72,14 +76,6 @@ public class User implements Serializable{
         return servers;
     }
 
-    public int getServerPort(String serverName) {
-        for (Server server : servers) {
-            if (server.getName().equalsIgnoreCase(serverName)) {
-                return server.getServerPort();
-            }
-        }
-        return -1;
-    } 
 
     public ArrayList<String> getServersNames() {
         ArrayList<String> names = new ArrayList<>();
@@ -91,10 +87,78 @@ public class User implements Serializable{
 
     public boolean doesServerExist(String serverName) {
         for (Server server : servers) {
-            if (server.getName().equals(serverName)) {
+            if (server.getName().equalsIgnoreCase(serverName)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean doesFriendExist(String username) {
+        for (User friend : friends) {
+            if (friend.getUsername().equalsIgnoreCase(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public User getFriend(String username) {
+        for (User user : friends) {
+            if (user.getUsername().equalsIgnoreCase(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+
+    public Server getServer(String serverName) {
+        for (Server server : servers) {
+            if (server.getName().equalsIgnoreCase(serverName)) {
+                return server;
+            }
+        }
+        return null;
+    }
+
+
+    public ArrayList<User> getFriends() {
+        return friends;
+    }
+
+    public void addFriendshipRequest(FriendshipRequest friendshipRequest) {
+        friendshipRequests.add(friendshipRequest);
+        System.out.println("There is a friendship request :))");
+    }
+
+    public void addFriend(User friend) {
+        friends.add(friend);
+    }
+
+    public boolean doesFriendshipRequestExist(String username) {
+        for (FriendshipRequest friendshipRequest : friendshipRequests) {
+            if (friendshipRequest.getSenderUser().getUsername().equalsIgnoreCase(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public FriendshipRequest getFriendshipRequest(String username) {
+        for (FriendshipRequest friendshipRequest : friendshipRequests) {
+            if (friendshipRequest.getSenderUser().getUsername().equalsIgnoreCase(username)) {
+                return friendshipRequest;
+            }
+        }
+        return null;
+    }
+
+    public void removeFriendshipRequest(FriendshipRequest friendshipRequest) {
+        friendshipRequests.remove(friendshipRequest);
+    }
+
+    public List<FriendshipRequest> getFriendshipRequests() {
+        return friendshipRequests;
     }
 }

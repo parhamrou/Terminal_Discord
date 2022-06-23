@@ -58,7 +58,7 @@ public class ClientHandler implements Runnable {
                             boolean doesServerExist = user.doesServerExist(serverName);
                             oOutputStream.writeObject(doesServerExist);
                             if (doesServerExist) {
-                                oOutputStream.writeObject(user.getServerPort(serverName));
+                                new ServerHandler(user.getServer(serverName), socket).start();
                             }
                         }
                         break;
@@ -71,12 +71,35 @@ public class ClientHandler implements Runnable {
                             Server server = new Server(serverName, user);
                             DataManager.addServer(server); // adding the new server to the Database
                             user.addServer(server); // adding the new server to the user's servers list
-                            new Thread(server).start();
+                        }
+                        break;
+                    case ADD_NEW_FRIEND:
+                        String username = (String) oInputStream.readObject();
+                        boolean doesUserExist = DataManager.isUserNameDuplicate(username);
+                        oOutputStream.writeObject(doesUserExist);
+                        if (doesUserExist) {
+                            DataManager.getUser(username).addFriendshipRequest(new FriendshipRequest(DataManager.getUser(username), this.user));
+                        }
+                        break;
+                    case SHOW_FRIENDSHIP_REQESTS:
+                        oOutputStream.writeObject(user.getFriendshipRequests());
+                        Request request1 = (Request) oInputStream.readObject();
+                        if (request1 == Request.ANSWER_REQUEST) {
+                            String chosenUsername = (String) oInputStream.readObject();
+                            oOutputStream.writeObject(user.doesFriendshipRequestExist(chosenUsername));
+                            Request request2 = (Request) oInputStream.readObject();
+                            if (request2 != Request.BACK) {
+                                FriendshipRequest friendshipRequest = user.getFriendshipRequest(chosenUsername);
+                                if (request2 == Request.ACCEPT_REQUEST) {
+                                    user.addFriend(friendshipRequest.getSenderUser());
+                                    friendshipRequest.getSenderUser().addFriend(this.user);
+                                }
+                                user.removeFriendshipRequest(friendshipRequest);
+                            }
                         }
                         break;
                 }
             }
-
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error");
         }

@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ServerHandler implements Runnable{
+public class ServerHandler {
 
     private Server server;
     private Socket socket;
@@ -27,8 +27,7 @@ public class ServerHandler implements Runnable{
         }
     }
 
-    @Override
-    public void run() {
+    public void start() {
         Request clientRequest;
         while (true) {
             try {
@@ -58,6 +57,22 @@ public class ServerHandler implements Runnable{
                             new Thread(channel).start(); // running the channel
                         }
                         break;
+                    case ADD_ROLE:
+                        String userName = (String) objectInputStream.readObject();
+                        boolean isCreator = (server.getCreator().getUsername().equalsIgnoreCase(userName));
+                        objectOutputStream.writeObject(isCreator);
+                        if ((Request) objectInputStream.readObject() == Request.CREATE_ROLE) {
+                            server.addRole((Role) objectInputStream.readObject());
+                            System.out.println("The new role is added!");
+                        }
+                        break;
+                    case ADD_USER:
+                        server.addUser((User) objectInputStream.readObject());
+                        System.out.println("The new user is added!");
+                        break;
+                    case REMOVE_USER:
+                        objectOutputStream.writeObject(server.getUsersNames());
+                        // must be continued from here.
                 }
             } catch (IOException e) {
                 System.out.println(e);

@@ -17,14 +17,14 @@ public class Role implements Serializable {
 
     
     // constructor
-    public Role(boolean canCreateChannel, boolean canRemoveChannel, boolean canRemoveUser, boolean canBanFromChannel, boolean canBanFromServer, boolean canChangeName, boolean canSeeHistory, boolean canPin) {
-        this.canCreateChannel = canBanFromChannel;
-        this.canRemoveChannel = canRemoveChannel;
-        this.canRemoveUser = canRemoveUser;
-        this.canBanFromChannel = canBanFromChannel;
-        this.canBanFromServer = canBanFromServer;
-        this.canChangeName = canChangeName;
-        this.canSeeHistory = canSeeHistory;
-        this.canPin = canPin;
+    public Role(boolean[] answers) {
+        this.canCreateChannel = answers[0];
+        this.canRemoveChannel = answers[1];
+        this.canRemoveUser = answers[2];
+        this.canBanFromChannel = answers[3];
+        this.canBanFromServer = answers[4];
+        this.canChangeName = answers[5];
+        this.canSeeHistory = answers[6];
+        this.canPin = answers[7];
     }
 }

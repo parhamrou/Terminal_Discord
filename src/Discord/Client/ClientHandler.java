@@ -5,11 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+
 import CommonClasses.*;
 
 /**
@@ -89,7 +86,7 @@ public class ClientHandler {
             MenuPrinter.printSecondMenu();
             try {
                 int choice = scanner.nextInt();
-                if (choice > 5 || choice < 0) {
+                if (choice > 6 || choice < 0) {
                     System.out.println("Your input is invalid!");
                     continue;
                 }
@@ -107,6 +104,9 @@ public class ClientHandler {
                         showFriendshipRequests();
                         break;
                     case 5:
+                        addNewFriend();
+                        break;
+                    case 6:
                         oOutputStream.writeObject(Request.SIGN_OUT);
                         isUserEntered = false;
                         user = null;
@@ -134,16 +134,18 @@ public class ClientHandler {
      * @throws ClassNotFoundException
      */
     private void showFriendshipRequests() throws IOException, ClassNotFoundException {
+        scanner.nextLine();
         oOutputStream.writeObject(Request.SHOW_FRIENDSHIP_REQESTS);
-        ArrayList<FriendshipRequest> friendshipRequests = (ArrayList<FriendshipRequest>) oInputStream.readObject();
+        List<FriendshipRequest> friendshipRequests = (List<FriendshipRequest>) oInputStream.readObject();
         if (friendshipRequests.size() == 0) {
             System.out.println("There is no friendship request for you now!");
             oOutputStream.writeObject(Request.BACK);
             return;
         }
-        int counter = 0;
+        int counter = 1;
         for (FriendshipRequest friendshipRequest : friendshipRequests) {
-            System.out.println(counter + "" + friendshipRequest);
+            System.out.println(counter + "- " + friendshipRequest);
+            counter++;
         }
         System.out.println("Enter the username of who has sent friendship request to you. if you want to back, enter -1:\n> ");
         String choice = scanner.nextLine();
@@ -151,16 +153,25 @@ public class ClientHandler {
             oOutputStream.writeObject(Request.BACK);
             return;
         }
+        oOutputStream.writeObject(Request.ANSWER_REQUEST);
         oOutputStream.writeObject(choice);
+        boolean doesFriendshipRequestExist = (boolean) oInputStream.readObject();
+        if (!doesFriendshipRequestExist) {
+            System.out.println("There is no friendship request with this username.");
+            oOutputStream.writeObject(Request.BACK);
+            return;
+        }
         while (true) {
             System.out.println("1- Accept    2- Reject");
             try {
                 int choice2 = scanner.nextInt();
                 if (choice2 == 1) {
                     oOutputStream.writeObject(Request.ACCEPT_REQUEST);
+                    System.out.println("You accepted the request!");
                     return;
                 } else if (choice2 == 2) {
                     oOutputStream.writeObject(Request.REJECT_REQUEST);
+                    System.out.println("You rejected the request!");
                     return;
                 } else {
                     System.out.println("Your input is invalid!");
@@ -170,6 +181,24 @@ public class ClientHandler {
                 System.out.println("Your input is not valid!");
                 continue;
             }
+        }
+    }
+
+
+    private void addNewFriend() throws IOException, ClassNotFoundException {
+        scanner.nextLine();
+        System.out.println("Enter the username of the user you want to add. If you want to back, enter '-1': ");
+        String username = scanner.nextLine();
+        if (username.equals("-1")) {
+            return;
+        }
+        oOutputStream.writeObject(Request.ADD_NEW_FRIEND);
+        oOutputStream.writeObject(username);
+        boolean isSuccessful = (boolean) oInputStream.readObject();
+        if (isSuccessful) {
+            System.out.println("Your request is sent!");
+        } else {
+            System.out.println("There is no user with this username!");
         }
     }
 
@@ -241,10 +270,9 @@ public class ClientHandler {
             oOutputStream.writeObject(serverName); // sending server name
             boolean isSuccessful = (boolean) oInputStream.readObject();
             if (isSuccessful) {
-                int portNumber = (Integer) oInputStream.readObject(); // getting the port numebr of the server from the server
-                ServerHandler serverHandler = new ServerHandler(user, serverName, portNumber);
+                ServerHandler serverHandler = new ServerHandler(user, serverName, socket);
                 System.out.println("After creating ServerHandler!");
-                serverHandler.start();
+                serverHandler.start(); // from now, we communicate with server from ServerHandler object with previous socket
             } else {
                 System.out.println("There is no server with this name!");
             }

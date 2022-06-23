@@ -33,8 +33,7 @@ public class DataManager {
     public static void LoadData() {
         try {
             readUsers();
-            readServers();
-            runServers();
+            runChannels();
         } catch (FileNotFoundException e) {
             System.out.println("There is no file with this address!");
             e.printStackTrace();
@@ -77,10 +76,9 @@ public class DataManager {
         fInputStream.close();
     }
 
-    private static void runServers() {
+    private static void runChannels() {
         ExecutorService executorService = Executors.newCachedThreadPool();
         for (Server server : servers) {
-            executorService.execute(server); // running the server
             server.runChannels(); // running the server's channels
         }
     }
@@ -137,6 +135,15 @@ public class DataManager {
     private synchronized static  boolean addUser(User user) {
         users.add(user);
         return true;
+    }
+
+    public synchronized static User getUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equalsIgnoreCase(username)) {
+                return user;
+            }
+        }
+        return null;
     }
 
     public synchronized static void addServer(Server server) {

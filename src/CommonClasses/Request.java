@@ -24,4 +24,10 @@ public enum Request implements Serializable {
     CHECK_SERVER_NAME,
     SIGN_OUT,
     CHECK_CHANNEL_NAME,
+    ADD_ROLE,
+    CREATE_ROLE,
+    ADD_USER,
+    REMOVE_USER,
+    ADD_NEW_FRIEND,
+    ANSWER_REQUEST,
 }

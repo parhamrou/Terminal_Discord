@@ -11,14 +11,13 @@ import CommonClasses.User;
 import CommonClasses.Channel;
 
 
-public class Server implements Runnable, Serializable {
+public class Server implements Serializable {
     
     private String name;
     private List<Channel> channels;
     private List<User> users;
     private List<Role> roles;
     private final User creator;
-    private int serverPortNumber;
 
 
     // constructor
@@ -28,30 +27,6 @@ public class Server implements Runnable, Serializable {
         channels = Collections.synchronizedList(new ArrayList<>());
         users = Collections.synchronizedList(new ArrayList<>());
         roles = Collections.synchronizedList(new ArrayList<>());
-    }
-
-    @Override
-    public void run() {
-        Socket socket;
-        System.out.println("Now the server '" + name + "' is listening...");
-        try {
-            ServerSocket serverSocket = new ServerSocket(0);
-            serverPortNumber = serverSocket.getLocalPort();
-            ExecutorService executorService = Executors.newCachedThreadPool();
-            // waiting for a client to connect and pass it to a new thread.
-            while (true)  {
-                try {
-                    socket = serverSocket.accept();
-                    System.out.println("Now a client is connected to the server '" + name + "' with port number: " + socket.getPort());
-                    executorService.execute(new ServerHandler(this, socket));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-            System.out.println(e);
-            e.printStackTrace();
-        }
     }
 
 
@@ -95,6 +70,7 @@ public class Server implements Runnable, Serializable {
         channels.add(channel);
     }
 
+
     public void runChannels() {
         ExecutorService executorService = Executors.newCachedThreadPool();
         for (Channel channel : channels) {
@@ -105,9 +81,6 @@ public class Server implements Runnable, Serializable {
         return name;
     }
 
-    public int getServerPort() {
-        return serverPortNumber;
-    }
 
     public ArrayList<String> getChannelsNames() {
         ArrayList<String> names = new ArrayList<>();
@@ -143,5 +116,21 @@ public class Server implements Runnable, Serializable {
             }
         }
         return false;
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void addRole(Role role) {
+        roles.add(role);
+    }
+
+    public ArrayList<String> getUsersNames() {
+        ArrayList<String> usersNames = new ArrayList<>();
+        for (User user : users) {
+            usersNames.add(user.getUsername());
+        }
+        return usersNames;
     }
 }

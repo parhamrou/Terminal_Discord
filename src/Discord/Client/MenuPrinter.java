@@ -24,7 +24,8 @@ public class MenuPrinter {
         System.out.println("2- Create server");
         System.out.println("3- Personal chats");
         System.out.println("4- friendship requests");
-        System.out.println("5- Sign out");
+        System.out.println("5- Add new friend");
+        System.out.println("6- Sign out");
         System.out.print("> ");
     }
 
@@ -50,9 +51,9 @@ public class MenuPrinter {
     public static void serverMenu() {
         System.out.println("1- Show channels");
         System.out.println("2- Create channel");
-        System.out.println("3- Add user to server");
-        System.out.println("4- remove user from server");
-        System.out.println("5- Create channel");
+        System.out.println("3- Add new role");
+        System.out.println("4- Add user to server");
+        System.out.println("5- remove user from server");
         System.out.println("6- Exit");
         System.out.print("> ");
     }
