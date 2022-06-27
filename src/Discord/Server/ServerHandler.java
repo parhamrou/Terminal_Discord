@@ -13,11 +13,13 @@ public class ServerHandler {
     private Socket socket;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
+    private User user;
 
     // constructor
-    public ServerHandler(Server server, Socket socket) {
+    public ServerHandler(Server server, Socket socket, User user) {
         this.server = server;
         this.socket = socket;
+        this.user = user;
         try {
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
@@ -67,8 +69,18 @@ public class ServerHandler {
                         }
                         break;
                     case ADD_USER:
-                        server.addUser((User) objectInputStream.readObject());
-                        System.out.println("The new user is added!");
+                        objectOutputStream.writeObject(user.getFriends());
+                        Request request1 = (Request) objectInputStream.readObject();
+                        if (request1 != Request.BACK) {
+                            String username = (String) objectInputStream.readObject();
+                            boolean doesFriendExist = user.doesFriendExist(username);
+                            objectOutputStream.writeObject(doesFriendExist);
+                            if (doesFriendExist) {
+                                User friend = user.getFriend(username);
+                                server.addUser(friend); // adding user to the server
+                                friend.addServer(this.server); // adding server to the user's list
+                            }
+                        }
                         break;
                     case REMOVE_USER:
                         objectOutputStream.writeObject(server.getUsersNames());

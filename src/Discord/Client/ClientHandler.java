@@ -1,6 +1,5 @@
-package  Discord.Client;
+package Discord.Client;
 
-import java.io.Console;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,6 +7,7 @@ import java.net.Socket;
 import java.util.*;
 
 import CommonClasses.*;
+import Discord.Server.*;
 
 /**
  * This class is for handling the actions of the user.
@@ -74,9 +74,9 @@ public class ClientHandler {
             } catch (ClassNotFoundException e) {
                 System.out.println(e);
             }
-        }   
+        }
     }
-    
+
 
     /**
      * This method is for handling second menu and using the proper classes for user's choices.
@@ -86,7 +86,7 @@ public class ClientHandler {
             MenuPrinter.printSecondMenu();
             try {
                 int choice = scanner.nextInt();
-                if (choice > 6 || choice < 0) {
+                if (choice > 7 || choice < 0) {
                     System.out.println("Your input is invalid!");
                     continue;
                 }
@@ -101,12 +101,15 @@ public class ClientHandler {
                         showPVChats();
                         break;
                     case 4:
-                        showFriendshipRequests();
+                        createPvChat();
                         break;
                     case 5:
-                        addNewFriend();
+                        showFriendshipRequests();
                         break;
                     case 6:
+                        addNewFriend();
+                        break;
+                    case 7:
                         oOutputStream.writeObject(Request.SIGN_OUT);
                         isUserEntered = false;
                         user = null;
@@ -128,8 +131,9 @@ public class ClientHandler {
 
 
     /**
-     * This method shows the friendship requests which are sent to a user. Then, the user can exit, or can accept or reject 
+     * This method shows the friendship requests which are sent to a user. Then, the user can exit, or can accept or reject
      * the request.
+     *
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -214,23 +218,28 @@ public class ClientHandler {
                 oOutputStream.writeObject(Request.BACK);
                 return;
             }
+            int counter = 1;
             for (String PV : PVs) {
-                System.out.println("Enter the name of the server you want to enter. If you want back, enter -1\n> ");
-                String PVName = scanner.nextLine();
-                if (PVName.equals("-1")) {
-                    oOutputStream.writeObject(Request.BACK);
-                    return;
-                }
-                oOutputStream.writeObject(Request.ENTER_PV); // sending request
-                oOutputStream.writeObject(PVName); // sending server name
-                boolean isSuccessful = (boolean) oInputStream.readObject();
-                if (isSuccessful) {
-                    PVChat pvChat = (PVChat) oInputStream.readObject();
-                    int portNumber = (Integer) oInputStream.readObject(); // getting the port number of the server from the server
-                    PVHandler pvHandler = new PVHandler(pvChat, portNumber);
-                    pvHandler.start();   
-                } 
-            }   
+                System.out.println(counter + "- " + PV);
+                counter++;
+            }
+            scanner.nextLine();
+            System.out.println("Enter the name of the PV you want to enter. If you want back, enter -1\n> ");
+            String PVName = scanner.nextLine();
+            if (PVName.equals("-1")) {
+                oOutputStream.writeObject(Request.BACK);
+                return;
+            }
+            oOutputStream.writeObject(Request.ENTER_PV); // sending request
+            oOutputStream.writeObject(PVName); // sending server name
+            boolean isSuccessful = (boolean) oInputStream.readObject();
+            if (isSuccessful) {
+                PVHandler pvHandler = new PVHandler((int) oInputStream.readObject(), user);
+                pvHandler.start();
+            } else {
+                System.out.println("There is no PVChat with this name!");
+                return;
+            }
         } catch (IOException e) {
             System.out.println(e);
             e.printStackTrace();
@@ -240,9 +249,38 @@ public class ClientHandler {
         }
     }
 
-    
+    private void createPvChat() throws IOException, ClassNotFoundException {
+        scanner.nextLine();
+        oOutputStream.writeObject(Request.CREATE_PV_CHAT);
+        ArrayList<String> friends = (ArrayList<String>) oInputStream.readObject();
+        if (friends.size() == 0) {
+            System.out.println("You have no friends to start a chat!");
+            oOutputStream.writeObject(Request.BACK);
+            return;
+        }
+        int counter = 1;
+        for (String name : friends) {
+            System.out.println(counter + "- " + name);
+        }
+        System.out.println("Enter the username of the user you want to start a chat. If you want to back, enter '-1':\n> ");
+        String username = scanner.nextLine();
+        if (username.equals("-1")) {
+            oOutputStream.writeObject(Request.BACK);
+            return;
+        }
+        oOutputStream.writeObject(Request.CONTINUE);
+        oOutputStream.writeObject(username);
+        boolean isSuccessful = (boolean) oInputStream.readObject();
+        if (isSuccessful) {
+
+            System.out.println("Now the chat is created.");
+        } else {
+            System.out.println("There is no user with this username in your friends!");
+        }
+    }
     /**
      * This method shows the list of server of one user. then user can choose one of the servers or exit.
+     *
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -312,6 +350,7 @@ public class ClientHandler {
     /**
      * This method gets username and password from the user and then checks if the user is valid or not.
      * It is used for both Sign in and Sign Up. It uses regex to check the validity of the pattern of the strings.
+     *
      * @return 0: successful   -1: login is not successful   -2: The information already exists    -3: exit
      * @throws IOException
      * @throws ClassNotFoundException
@@ -365,9 +404,10 @@ public class ClientHandler {
 
 
     /**
-     * This method is used when the user wants to Sign up. It gets the email and the phoneNumber from the user and 
+     * This method is used when the user wants to Sign up. It gets the email and the phoneNumber from the user and
      * sends them in a hashmap with the previous information: username and password.
-     * @return 
+     *
+     * @return
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -406,7 +446,8 @@ public class ClientHandler {
     /**
      * This method is for both Sign up and Sign in. It calls the proper methods for each one.
      * It returns false if user can't enter his account, and returns true if the user entered the account successfuly.
-     * @param isLogin 
+     *
+     * @param isLogin
      * @throws ClassNotFoundException
      * @throws IOException
      */
@@ -415,8 +456,8 @@ public class ClientHandler {
             int result = sendFirstMap(isLogin);
             if (result == -3) {
                 return false;
-            } 
-            if (isLogin) { 
+            }
+            if (isLogin) {
                 if (result == -1) {
                     System.out.println("Your username or password is not correct. Try again!");
                     continue;

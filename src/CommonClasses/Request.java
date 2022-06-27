@@ -30,4 +30,11 @@ public enum Request implements Serializable {
     REMOVE_USER,
     ADD_NEW_FRIEND,
     ANSWER_REQUEST,
+    CONTINUE,
+    EXIT,
+    CREATE_PV_CHAT,
+    TEXT_MESSAGE,
+    SEND_FILE,
+    DOWNLOAD_FILE,
+    CHECK_FILE,
 }

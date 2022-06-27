@@ -22,6 +22,7 @@ public class FriendshipRequest implements Serializable {
         return destinationUser;
     }
 
+
     public User getSenderUser() {
         return senderUser;
     }

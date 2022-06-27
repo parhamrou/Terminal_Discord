@@ -2,11 +2,11 @@ package  CommonClasses;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.format.*;
 
-public class Message implements Serializable {
+public abstract class Message implements Serializable {
     
     private User user;
-    private String text;
     private LocalDateTime date;
     private int likes = 0;
     private int dislikes = 0;
@@ -14,22 +14,23 @@ public class Message implements Serializable {
     
 
     // constructor
-    public Message(User user, String text) {
+    public Message(User user) {
         this.user = user;
-        this.text = text;
         date = LocalDateTime.now();
     }
 
-    public String getText() {
-        return text;
-    }
+    public abstract String getText();
 
     public User getUser() {
         return user;
     }
 
+    public LocalDateTime getDate() {
+        return date;
+    }
+
     @Override
     public String toString() {
-        return String.format("%s\n%s\n%s\n", user.getUsername(), text, date);
+        return user.toString();
     }
 }

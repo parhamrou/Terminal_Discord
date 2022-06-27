@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class DataManager {
 
     private static FileInputStream fInputStream;
     private static ObjectInputStream objectInputStream;
+
 
     /**
      * This \method calls the methods which have to load data from multiple files.
@@ -77,7 +79,6 @@ public class DataManager {
     }
 
     private static void runChannels() {
-        ExecutorService executorService = Executors.newCachedThreadPool();
         for (Server server : servers) {
             server.runChannels(); // running the server's channels
         }
@@ -145,6 +146,7 @@ public class DataManager {
         }
         return null;
     }
+
 
     public synchronized static void addServer(Server server) {
         servers.add(server);

@@ -3,6 +3,7 @@ package  CommonClasses;
 import Discord.Server.*;
 
 import java.io.Serializable;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class User implements Serializable{
@@ -14,6 +15,7 @@ public class User implements Serializable{
     private String status;
     private ArrayList<Server> servers;
     private ArrayList<User> friends;
+    private ArrayList<PVChat> pvChats;
     private List<FriendshipRequest> friendshipRequests;
 
     
@@ -25,6 +27,7 @@ public class User implements Serializable{
         this.phoneNumber = phoneNumber;
         friends = new ArrayList<>();
         servers = new ArrayList<>();
+        pvChats = new ArrayList<>();
         friendshipRequests = Collections.synchronizedList(new ArrayList<>());
     }
 
@@ -48,10 +51,12 @@ public class User implements Serializable{
         this.email = email;
     }
 
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    
+
+
     public String getUsername() {
         return username;
     }
@@ -127,14 +132,25 @@ public class User implements Serializable{
         return friends;
     }
 
+    public ArrayList<String> getFriendsList() {
+        ArrayList<String> friends = new ArrayList<>();
+        for (User user : this.friends) {
+            friends.add(user.getUsername());
+        }
+        return friends;
+    }
+
+
     public void addFriendshipRequest(FriendshipRequest friendshipRequest) {
         friendshipRequests.add(friendshipRequest);
         System.out.println("There is a friendship request :))");
     }
 
+
     public void addFriend(User friend) {
         friends.add(friend);
     }
+
 
     public boolean doesFriendshipRequestExist(String username) {
         for (FriendshipRequest friendshipRequest : friendshipRequests) {
@@ -145,6 +161,7 @@ public class User implements Serializable{
         return false;
     }
 
+
     public FriendshipRequest getFriendshipRequest(String username) {
         for (FriendshipRequest friendshipRequest : friendshipRequests) {
             if (friendshipRequest.getSenderUser().getUsername().equalsIgnoreCase(username)) {
@@ -154,11 +171,41 @@ public class User implements Serializable{
         return null;
     }
 
+
     public void removeFriendshipRequest(FriendshipRequest friendshipRequest) {
         friendshipRequests.remove(friendshipRequest);
     }
 
+
+    public ArrayList<String> getPvChats() {
+        ArrayList<String> names = new ArrayList<>();
+        for (PVChat pvChat : pvChats) {
+            if (pvChat.getUser1().getUsername().equalsIgnoreCase(username)) {
+                names.add(pvChat.getUser2().getUsername());
+            } else {
+                names.add(pvChat.getUser1().getUsername());
+            }
+        }
+        return names;
+    }
+
     public List<FriendshipRequest> getFriendshipRequests() {
         return friendshipRequests;
+    }
+
+
+    public PVChat getPVChat(String username) {
+        for (PVChat pvChat : pvChats) {
+            String firstUser = pvChat.getUser1().getUsername();
+            String secondUser = pvChat.getUser2().getUsername();
+            if ((firstUser.equalsIgnoreCase(username) || secondUser.equalsIgnoreCase(username)) && !this.username.equalsIgnoreCase(username)) {
+                return pvChat;
+            }
+        }
+        return null;
+    }
+
+    public void addPvChat(PVChat pvChat) {
+        pvChats.add(pvChat);
     }
 }

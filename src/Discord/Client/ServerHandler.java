@@ -5,9 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 import CommonClasses.*;
 
@@ -194,22 +192,35 @@ public class ServerHandler {
         return new Role(choices);
     }
 
-    private void addUser() throws IOException {
-        if (user.getFriends().size() == 0) {
+    private void addUser() throws IOException, ClassNotFoundException {
+        scanner.nextLine();
+        outputStream.writeObject(Request.ADD_USER);
+        List<User> friends = (List<User>) oInputStream.readObject();
+        if (friends.size() == 0) {
             System.out.println("You have no friends yet!");
+            outputStream.writeObject(Request.BACK);
             return;
         }
-        scanner.nextLine();
         System.out.println("Here is your friends' list: ");
-        user.showFriends();
+        int counter = 1;
+        for (User user : friends) {
+            System.out.println(counter + "- " + user.getUsername());
+            counter++;
+        }
         System.out.println("Enter the username of the user you want to add to the server. if You want to back, enter -1: ");
         String username = scanner.nextLine();
         if (username.equals("-1")) {
+            outputStream.writeObject(Request.BACK);
             return;
         }
-        if (user.doesFriendExist(username)) {
-            outputStream.writeObject(Request.ADD_USER);
-            outputStream.writeObject(user.getFriend(username));
+        outputStream.writeObject(Request.CONTINUE);
+        outputStream.writeObject(username);
+        boolean isUsernameValid = (boolean) oInputStream.readObject();
+        if (!isUsernameValid) {
+            System.out.println("There is no user with this username!");
+            return;
+        } else {
+            System.out.println("The user is added to server!");
         }
     }
 

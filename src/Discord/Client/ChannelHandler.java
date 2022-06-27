@@ -1,8 +1,7 @@
 package  Discord.Client;
 
-import CommonClasses.Message;
-import CommonClasses.Request;
-import CommonClasses.User;
+import CommonClasses.*;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -75,9 +74,9 @@ public class ChannelHandler {
      */
     private void serverReader() throws ClassNotFoundException {
         try {
-            Message message = null;
+            TextMessage message = null;
             while (true) {
-                message = (Message) oInputStream.readObject();
+                message = (TextMessage) oInputStream.readObject();
                 if (message.getText().equals("#exit")) {
                     oInputStream.close();
                     socket.close();
@@ -100,7 +99,7 @@ public class ChannelHandler {
             outputStream.writeChars(user.getUsername() + " is joined!");
             String messageText = scanner.nextLine();
             while (!messageText.equals("#exit")) {
-                Message message = new Message(user, messageText);
+                Message message = new TextMessage(user, messageText);
                 outputStream.writeObject(message);
                 messageText = scanner.nextLine();
             }
