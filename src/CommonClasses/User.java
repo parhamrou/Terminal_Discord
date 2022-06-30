@@ -208,4 +208,8 @@ public class User implements Serializable{
     public void addPvChat(PVChat pvChat) {
         pvChats.add(pvChat);
     }
+
+    public void removeServer(Server server) {
+        servers.remove(server);
+    }
 }

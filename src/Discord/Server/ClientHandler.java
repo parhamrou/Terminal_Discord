@@ -109,7 +109,7 @@ public class ClientHandler implements Runnable {
                     case PV_LIST:
                         oOutputStream.writeUnshared(user.getPvChats());
                         Request request2 = (Request) oInputStream.readObject();
-                        if (request2 == Request.ENTER_PV) {
+                        if (request2 == Request.ENTER_CHAT) {
                             String PVName = (String) oInputStream.readObject();
                             PVChat pvChat = user.getPVChat(PVName);
                             boolean doesPVChatExist;

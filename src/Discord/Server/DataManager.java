@@ -151,4 +151,8 @@ public class DataManager {
     public synchronized static void addServer(Server server) {
         servers.add(server);
     }
+
+    public static void removeServer(Server server) {
+        servers.remove(server);
+    }
 }

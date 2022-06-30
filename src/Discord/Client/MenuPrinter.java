@@ -37,7 +37,7 @@ public class MenuPrinter {
     public static void printChannelMenu() {
         System.out.println("1- Enter channel");
         System.out.println("2- Delete channel");
-        System.out.println("4- ");
+        System.out.println("3- Exit");
     }
 
 
@@ -50,12 +50,15 @@ public class MenuPrinter {
 
 
     public static void serverMenu() {
+        // NOTE: WE HAVE TO CHECK IF THE KEY IS VALID IN MAP OR NOT
         System.out.println("1- Show channels");
         System.out.println("2- Create channel");
-        System.out.println("3- Add new role");
-        System.out.println("4- Add user to server");
-        System.out.println("5- remove user from server");
-        System.out.println("6- Exit");
+        System.out.println("3- Add new role"); // checked! ✅
+        System.out.println("4- Map a role to a user"); // checked! ✅
+        System.out.println("5- Add user to server"); // checked! ✅
+        System.out.println("6- Remove user from server"); // checked! ✅
+        System.out.println("7- Delete server");
+        System.out.println("8- Exit");
         System.out.print("> ");
     }
 }

@@ -7,13 +7,11 @@ public enum Request implements Serializable {
     SIGN_IN,
     SIGN_UP,
     CHANNEL_LIST,
-    ENTER_CHANNEL,
-    LOAD_CHANNEL,
-    LOAD_PV,
+    LOAD_CHAT,
     SERVER_LIST,
     ENTER_SERVER,
     PV_LIST,
-    ENTER_PV,
+    ENTER_CHAT,
     BLOCK_IN_PV,
     BACK,
     SHOW_FRIENDSHIP_REQESTS,
@@ -37,4 +35,7 @@ public enum Request implements Serializable {
     SEND_FILE,
     DOWNLOAD_FILE,
     CHECK_FILE,
+    MAP_ROLE,
+    CHECK_ROLE_NAME,
+    DELETE_SERVER
 }

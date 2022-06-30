@@ -1,13 +1,10 @@
 package Discord.Client;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.*;
-
 import CommonClasses.*;
-import Discord.Server.*;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 /**
  * This class is for handling the actions of the user.
@@ -15,10 +12,10 @@ import Discord.Server.*;
 public class ClientHandler {
 
     private User user;
-    private Socket socket;
+    private final Socket socket;
     private ObjectInputStream oInputStream;
     private ObjectOutputStream oOutputStream;
-    private Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
     private boolean isUserEntered;
 
     // constructor
@@ -230,7 +227,7 @@ public class ClientHandler {
                 oOutputStream.writeObject(Request.BACK);
                 return;
             }
-            oOutputStream.writeObject(Request.ENTER_PV); // sending request
+            oOutputStream.writeObject(Request.ENTER_CHAT); // sending request
             oOutputStream.writeObject(PVName); // sending server name
             boolean isSuccessful = (boolean) oInputStream.readObject();
             if (isSuccessful) {
@@ -309,7 +306,6 @@ public class ClientHandler {
             boolean isSuccessful = (boolean) oInputStream.readObject();
             if (isSuccessful) {
                 ServerHandler serverHandler = new ServerHandler(user, serverName, socket);
-                System.out.println("After creating ServerHandler!");
                 serverHandler.start(); // from now, we communicate with server from ServerHandler object with previous socket
             } else {
                 System.out.println("There is no server with this name!");
@@ -356,8 +352,8 @@ public class ClientHandler {
      * @throws ClassNotFoundException
      */
     private int sendFirstMap(boolean isLogin) throws IOException, ClassNotFoundException {
-        String username = null;
-        String password = null;
+        String username;
+        String password;
         while (true) {
             System.out.print("Enter your username. if you want to back, enter -1:\n>  ");
             username = scanner.nextLine();

@@ -11,7 +11,7 @@ public class MainServer {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    PVChat.fileServerSocketListen(); // has to move to DataManager
+                    TextChat.fileServerSocketListen();
                 }
             }).start();
             ExecutorService executorService = Executors.newCachedThreadPool(); // using thread pool for executing the threads.

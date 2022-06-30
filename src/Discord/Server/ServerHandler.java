@@ -2,6 +2,7 @@ package Discord.Server;
 
 import CommonClasses.*;
 
+import javax.xml.crypto.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -40,7 +41,7 @@ public class ServerHandler {
                     case CHANNEL_LIST:
                         objectOutputStream.writeObject(server.getChannelsNames());
                         clientRequest = (Request) objectInputStream.readObject();
-                        if (clientRequest == Request.ENTER_CHANNEL) {
+                        if (clientRequest == Request.ENTER_CHAT) {
                             String channelName = (String) objectInputStream.readObject();
                             boolean doesChannelExist = server.doesChannelExist(channelName);
                             objectOutputStream.writeObject(doesChannelExist);
@@ -50,6 +51,11 @@ public class ServerHandler {
                         }
                         break;
                     case CHECK_CHANNEL_NAME:
+                        boolean canCreateChannel = server.getRoleMap().get(user).CanCreateChannel();
+                        objectOutputStream.writeObject(canCreateChannel);
+                        if (!canCreateChannel) {
+                            break;
+                        }
                         String channelName = (String) objectInputStream.readObject();
                         objectOutputStream.writeObject(server.isChannelNameDuplicated(channelName));
                         Request request = (Request) objectInputStream.readObject();
@@ -60,12 +66,39 @@ public class ServerHandler {
                         }
                         break;
                     case ADD_ROLE:
-                        String userName = (String) objectInputStream.readObject();
-                        boolean isCreator = (server.getCreator().getUsername().equalsIgnoreCase(userName));
+                        boolean isCreator = (server.getCreator() == this.user);
                         objectOutputStream.writeObject(isCreator);
                         if ((Request) objectInputStream.readObject() == Request.CREATE_ROLE) {
                             server.addRole((Role) objectInputStream.readObject());
                             System.out.println("The new role is added!");
+                        }
+                        break;
+                    case MAP_ROLE:
+                        isCreator = (server.getCreator() == this.user);
+                        objectOutputStream.writeObject(isCreator);
+                        if (!isCreator) {
+                            break;
+                        }
+                        objectOutputStream.writeUnshared(server.roleNames());
+                        if ((Request) objectInputStream.readObject() == Request.CHECK_ROLE_NAME) {
+                            String roleName = (String) objectInputStream.readObject();
+                            Role role = server.getRole(roleName);
+                            if (role == null) {
+                                objectOutputStream.writeObject(false);
+                            } else {
+                                objectOutputStream.writeObject(true);
+                                objectOutputStream.writeUnshared(server.getUsersNames());
+                                if ((Request) objectInputStream.readObject() == Request.CHECK_USERNAME) {
+                                    String username = (String) objectInputStream.readObject();
+                                    User user = server.getUser(username);
+                                    if (user == null) {
+                                        objectOutputStream.writeObject(false);
+                                    } else {
+                                        objectOutputStream.writeObject(true);
+                                        server.mapRole(user, role);
+                                    }
+                                }
+                            }
                         }
                         break;
                     case ADD_USER:
@@ -83,8 +116,39 @@ public class ServerHandler {
                         }
                         break;
                     case REMOVE_USER:
-                        objectOutputStream.writeObject(server.getUsersNames());
-                        // must be continued from here.
+                        boolean canRemove;
+                        if (!server.getRoleMap().containsKey(user)) {
+                            canRemove = false;
+                        } else {
+                            canRemove = server.getRoleMap().get(user).CanRemoveUser();
+                        }
+                        objectOutputStream.writeObject(canRemove);
+                        if (!canRemove) {
+                            break;
+                        }
+                        objectOutputStream.writeUnshared(server.getUsersNames());
+                        if ((Request) objectInputStream.readObject() == Request.CHECK_USERNAME) {
+                            String username = (String) objectInputStream.readObject();
+                            User user = server.getUser(username);
+                            if (user == null) {
+                                objectOutputStream.writeObject(false);
+                            } else {
+                                objectOutputStream.writeObject(true);
+                                server.removeUser(username);
+                            }
+                        }
+                        break;
+                    case DELETE_SERVER:
+                        isCreator = (server.getCreator() == this.user);
+                        objectOutputStream.writeObject(isCreator);
+                        if (!isCreator) {
+                            break;
+                        }
+                        server.removeServerFromUsers(); // removing from users' lists
+                        DataManager.removeServer(server);
+                        return;
+                    case BACK:
+                        return;
                 }
             } catch (IOException e) {
                 System.out.println(e);
@@ -95,4 +159,5 @@ public class ServerHandler {
             }
         }
     }
+
 }

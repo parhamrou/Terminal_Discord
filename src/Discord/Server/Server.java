@@ -1,32 +1,32 @@
 package Discord.Server;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
 
 import CommonClasses.Role;
 import CommonClasses.User;
-import CommonClasses.Channel;
 
 
 public class Server implements Serializable {
     
     private String name;
-    private List<Channel> channels;
+    private List<TextChannel> channels;
     private List<User> users;
     private List<Role> roles;
     private final User creator;
-
+    private HashMap<User, Role> roleMap;
 
     // constructor
     public Server(String name, User creator) {
         this.name = name;
         this.creator = creator;
+        roleMap = new HashMap<>();
         channels = Collections.synchronizedList(new ArrayList<>());
         users = Collections.synchronizedList(new ArrayList<>());
         roles = Collections.synchronizedList(new ArrayList<>());
+        boolean[] boss = {true, true, true, true, true, true, true, true};
+        roleMap.put(creator, new Role("BOSS", boss)); // creator has BOSS ROLE
     }
 
 
@@ -48,10 +48,14 @@ public class Server implements Serializable {
 
     /**
      * This method is for removing a user from the server.
-     * @param user
      */
-    public void removeUser(User user) {
-        users.remove(user);
+    public synchronized void removeUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equalsIgnoreCase(username)) {
+                users.remove(user);
+                break;
+            }
+        }
     }
 
     
@@ -66,14 +70,14 @@ public class Server implements Serializable {
     /**
      * This method is for adding a new channel in the server.
      */
-    public void addChannel(Channel channel) {
+    public void addChannel(TextChannel channel) {
         channels.add(channel);
     }
 
 
     public void runChannels() {
         ExecutorService executorService = Executors.newCachedThreadPool();
-        for (Channel channel : channels) {
+        for (TextChannel channel : channels) {
             executorService.execute(channel);
         }
     }
@@ -84,16 +88,16 @@ public class Server implements Serializable {
 
     public ArrayList<String> getChannelsNames() {
         ArrayList<String> names = new ArrayList<>();
-        for (Channel channel : channels) {
-            names.add(channel.getName());
+        for (TextChannel channel : channels) {
+            names.add(channel.getChannelName());
         }
         return names;
     }
 
 
     public boolean doesChannelExist(String channelName) {
-        for (Channel channel : channels) {
-            if (channel.getName().equalsIgnoreCase(channelName)) {
+        for (TextChannel channel : channels) {
+            if (channel.getChannelName().equalsIgnoreCase(channelName)) {
                 return true;
             }
         }
@@ -101,17 +105,17 @@ public class Server implements Serializable {
     }
 
     public int getChannelPortNumber(String channelName) {
-        for (Channel channel : channels) {
-            if (channel.getName().equalsIgnoreCase(channelName)) {
-                return  channel.getServerPortNumber();
+        for (TextChannel channel : channels) {
+            if (channel.getChannelName().equalsIgnoreCase(channelName)) {
+                return  channel.getPortNumber();
             }
         }
         return -1;
     }
 
     public boolean isChannelNameDuplicated(String channelName) {
-        for (Channel channel : channels) {
-            if (channel.getName().equalsIgnoreCase(channelName)) {
+        for (TextChannel channel : channels) {
+            if (channel.getChannelName().equalsIgnoreCase(channelName)) {
                 return true;
             }
         }
@@ -132,5 +136,46 @@ public class Server implements Serializable {
             usersNames.add(user.getUsername());
         }
         return usersNames;
+    }
+
+    public void mapRole(User user, Role role) {
+        roleMap.put(user, role);
+    }
+
+    public ArrayList<String> roleNames() {
+        ArrayList<String> roleNames = new ArrayList<>();
+        for (Role role : roles) {
+            roleNames.add(role.getName());
+        }
+        return roleNames;
+    }
+
+    public Role getRole(String roleName) {
+        for (Role role : roles) {
+            if (role.getName().equalsIgnoreCase(roleName)) {
+                return role;
+            }
+        }
+        return null;
+    }
+
+    public User getUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equalsIgnoreCase(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+
+    public void removeServerFromUsers() {
+        for (User user : users) {
+            user.removeServer(this);
+        }
+    }
+
+    public HashMap<User, Role> getRoleMap() {
+        return roleMap;
     }
 }
