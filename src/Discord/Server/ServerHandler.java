@@ -32,11 +32,27 @@ public class ServerHandler {
 
     public void start() {
         Request clientRequest;
+        boolean response;
         while (true) {
             try {
                 System.out.println("Waiting for request in serverHandler in sevrer side!");
                 clientRequest = (Request) objectInputStream.readObject();
                 System.out.println("Request: " + clientRequest.toString());
+                if (!server.getIsActive()) {
+                    if (clientRequest == Request.BACK) {
+                        response = true;
+                        objectOutputStream.writeObject(response);
+                        return;
+                    }
+                    else {
+                        response = false;
+                        objectOutputStream.writeObject(response);
+                        continue;
+                    }
+                }  else {
+                    response = true;
+                    objectOutputStream.writeObject(response);
+                }
                 switch (clientRequest) {
                     case CHANNEL_LIST:
                         objectOutputStream.writeObject(server.getChannelsNames());
@@ -51,7 +67,12 @@ public class ServerHandler {
                         }
                         break;
                     case CHECK_CHANNEL_NAME:
-                        boolean canCreateChannel = server.getRoleMap().get(user).CanCreateChannel();
+                        boolean canCreateChannel;
+                        if (!server.getRoleMap().containsKey(user)) {
+                            canCreateChannel = false;
+                        } else {
+                            canCreateChannel = server.getRoleMap().get(user).CanCreateChannel();
+                        }
                         objectOutputStream.writeObject(canCreateChannel);
                         if (!canCreateChannel) {
                             break;
@@ -60,7 +81,7 @@ public class ServerHandler {
                         objectOutputStream.writeObject(server.isChannelNameDuplicated(channelName));
                         Request request = (Request) objectInputStream.readObject();
                         if (request == Request.CREATE_CHANNEL) {
-                            TextChannel channel = new TextChannel(channelName);
+                            TextChannel channel = new TextChannel(channelName, server);
                             server.addChannel(channel); // adding the new server to the Database
                             new Thread(channel).start(); // running the channel
                         }
@@ -138,6 +159,39 @@ public class ServerHandler {
                             }
                         }
                         break;
+                    case CHANGE_SERVER_NAME:
+                        boolean canChange;
+                        if (!server.getRoleMap().containsKey(user)) {
+                            canChange = false;
+                        } else {
+                            canChange = server.getRoleMap().get(user).CanChangeName();
+                        }
+                        objectOutputStream.writeObject(canChange);
+                        if (canChange) {
+                            server.setName((String) objectInputStream.readObject());
+                        }
+                        break;
+                    case DELETE_CHANNEL:
+                        boolean canDelete;
+                        if (!server.getRoleMap().containsKey(user)) {
+                            canDelete = false;
+                        } else  {
+                            canDelete = server.getRoleMap().get(user).CanRemoveChannel();
+                        }
+                        objectOutputStream.writeObject(canDelete);
+                        if (canDelete) {
+                            objectOutputStream.writeObject(server.getChannelsNames());
+                            if (!(server.getChannelsNames().size() == 0)) {
+                                channelName = (String) objectInputStream.readObject();
+                                boolean doesChannelExist = server.doesChannelExist(channelName);
+                                objectOutputStream.writeObject(doesChannelExist);
+                                if (doesChannelExist) {
+                                    server.getChannel(channelName).inActiveChat();
+                                    server.removeChannel(server.getChannel(channelName));
+                                }
+                            }
+                        }
+                        break;
                     case DELETE_SERVER:
                         isCreator = (server.getCreator() == this.user);
                         objectOutputStream.writeObject(isCreator);
@@ -145,6 +199,8 @@ public class ServerHandler {
                             break;
                         }
                         server.removeServerFromUsers(); // removing from users' lists
+                        server.inActiveChannels();
+                        server.inActiveServer();
                         DataManager.removeServer(server);
                         return;
                     case BACK:

@@ -16,14 +16,17 @@ public class Server implements Serializable {
     private List<Role> roles;
     private final User creator;
     private HashMap<User, Role> roleMap;
+    private boolean isActive;
 
     // constructor
     public Server(String name, User creator) {
         this.name = name;
         this.creator = creator;
+        this.isActive = true;
         roleMap = new HashMap<>();
         channels = Collections.synchronizedList(new ArrayList<>());
         users = Collections.synchronizedList(new ArrayList<>());
+        users.add(creator);
         roles = Collections.synchronizedList(new ArrayList<>());
         boolean[] boss = {true, true, true, true, true, true, true, true};
         roleMap.put(creator, new Role("BOSS", boss)); // creator has BOSS ROLE
@@ -81,6 +84,7 @@ public class Server implements Serializable {
             executorService.execute(channel);
         }
     }
+
     public String getName() {
         return name;
     }
@@ -173,6 +177,33 @@ public class Server implements Serializable {
         for (User user : users) {
             user.removeServer(this);
         }
+    }
+
+    public void inActiveChannels() {
+        for (TextChannel textChannel : channels) {
+            textChannel.inActiveChat();
+        }
+    }
+
+    public void inActiveServer() {
+        this.isActive = false;
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    public void removeChannel(TextChannel textChannel) {
+        channels.remove(textChannel);
+    }
+
+    public TextChannel getChannel(String channelName) {
+        for (TextChannel textChannel : channels) {
+            if (textChannel.getChannelName().equalsIgnoreCase(channelName)) {
+                return textChannel;
+            }
+        }
+        return null;
     }
 
     public HashMap<User, Role> getRoleMap() {

@@ -12,8 +12,6 @@ public class PVChat extends TextChat implements Serializable, Runnable {
     private final User user2;
     private boolean isUser1Blocked = false;
     private boolean isUser2Blocked = false;
-    private int portNumber;
-    private final Random random = new Random();
 
     
     // constructor
@@ -25,9 +23,12 @@ public class PVChat extends TextChat implements Serializable, Runnable {
     @Override
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(0);
-            portNumber = serverSocket.getLocalPort();
-            System.out.println("Now the PVCHat is listening and waiting for clients...");
+            chatHandlers = new HashMap<>();
+            Random random = new Random();
+            serverSocket = new ServerSocket(0);
+            DataManager.addServerSocket(serverSocket);
+            setPortNumber(serverSocket.getLocalPort());
+            System.out.println("Now the PVChat is listening and waiting for clients in port " + getPortNumber());
             Socket socket;
             int handler_ID;
             while (true) {
@@ -64,10 +65,6 @@ public class PVChat extends TextChat implements Serializable, Runnable {
         return user2;
     }
 
-
-    public int getPortNumber() {
-        return portNumber;
-    }
 
     public void block(String username) {
         if (user1.getUsername().equalsIgnoreCase(username)) {

@@ -143,7 +143,6 @@ public class User implements Serializable{
 
     public void addFriendshipRequest(FriendshipRequest friendshipRequest) {
         friendshipRequests.add(friendshipRequest);
-        System.out.println("There is a friendship request :))");
     }
 
 
@@ -189,6 +188,10 @@ public class User implements Serializable{
         return names;
     }
 
+    public ArrayList<PVChat> GetPvChats() {
+        return pvChats;
+    }
+
     public List<FriendshipRequest> getFriendshipRequests() {
         return friendshipRequests;
     }
@@ -212,4 +215,5 @@ public class User implements Serializable{
     public void removeServer(Server server) {
         servers.remove(server);
     }
+
 }

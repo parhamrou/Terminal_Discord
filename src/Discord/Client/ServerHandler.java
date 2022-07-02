@@ -52,22 +52,29 @@ public class ServerHandler {
                         createChannel();
                         break;
                     case 3:
-                        addRole();
+                        deleteChannel();
                         break;
                     case 4:
-                        mapRole();
+                        addRole();
                         break;
                     case 5:
-                        addUser();
+                        mapRole();
                         break;
                     case 6:
-                        removeUser();
+                        addUser();
                         break;
                     case 7:
+                        removeUser();
+                        break;
+                    case 8:
                         removeServer();
                         return;
-                    case 8:
+                    case 9:
+                        changeServerName();
+                        break;
+                    case 10:
                         outputStream.writeObject(Request.BACK);
+                        oInputStream.readObject();
                         return;
                     default:
                         System.out.println("You input is invalid!");
@@ -91,6 +98,10 @@ public class ServerHandler {
     private void showChannels() throws IOException, ClassNotFoundException {
         try {
             outputStream.writeObject(Request.CHANNEL_LIST);
+            if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+                System.out.println("This server doesn't exist anymore. Please Exit!");
+                return;
+            }
             ArrayList<String> channels = (ArrayList<String>) oInputStream.readObject();
             if (channels.size() == 0) {
                 System.out.println("There is not channel in this server yet!");
@@ -127,6 +138,10 @@ public class ServerHandler {
 
     private void createChannel() throws ClassNotFoundException, IOException {
         outputStream.writeObject(Request.CHECK_CHANNEL_NAME);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         boolean canCreateChannel = (boolean) oInputStream.readObject();
         if (!canCreateChannel) {
             System.out.println("You can't create channel in this server!");
@@ -151,8 +166,30 @@ public class ServerHandler {
     }
 
 
+    private void changeServerName() throws IOException, ClassNotFoundException {
+        outputStream.writeObject(Request.CHANGE_SERVER_NAME);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
+        boolean canChange = (boolean) oInputStream.readObject();
+        if (!canChange) {
+            System.out.println("You can't change tha name of this server!");
+            return;
+        }
+        System.out.print("Enter the new name of the server:\n> ");
+        String newName = scanner.nextLine();
+        outputStream.writeObject(newName);
+        System.out.println("The name of the server is changed!");
+    }
+
+
     private void addRole() throws IOException, ClassNotFoundException {
         outputStream.writeObject(Request.ADD_ROLE);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         boolean isCreator = (boolean) oInputStream.readObject();
         if (!isCreator) {
             System.out.println("You have to be the server's creator to add a new role!");
@@ -167,6 +204,10 @@ public class ServerHandler {
 
     private void mapRole() throws IOException, ClassNotFoundException {
         outputStream.writeObject(Request.MAP_ROLE);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         boolean isCreator = (boolean) oInputStream.readObject();
         if (!isCreator) {
             System.out.println("You have to be the server's creator to map a role to a user!");
@@ -252,6 +293,10 @@ public class ServerHandler {
     private void addUser() throws IOException, ClassNotFoundException {
         scanner.nextLine();
         outputStream.writeObject(Request.ADD_USER);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         List<User> friends = (List<User>) oInputStream.readObject();
         if (friends.size() == 0) {
             System.out.println("You have no friends yet!");
@@ -284,6 +329,10 @@ public class ServerHandler {
 
     private void removeUser() throws IOException, ClassNotFoundException {
         outputStream.writeObject(Request.REMOVE_USER);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         boolean canRemove = (boolean) oInputStream.readObject();
         if (!canRemove) {
             System.out.println("You don't have permission to remove users from this server!");
@@ -315,12 +364,46 @@ public class ServerHandler {
 
     private void removeServer() throws IOException, ClassNotFoundException {
         outputStream.writeObject(Request.DELETE_SERVER);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
         boolean isCreator = (boolean) oInputStream.readObject();
         if (!isCreator) {
             System.out.println("You have to be the server's creator to delete the server!");
-            outputStream.writeObject(Request.BACK);
             return;
         }
         System.out.println("The server is deleted!");
+    }
+
+    private void deleteChannel() throws IOException, ClassNotFoundException {
+        outputStream.writeObject(Request.DELETE_CHANNEL);
+        if (!(boolean) oInputStream.readObject()) { // checking if the server exists or not
+            System.out.println("This server doesn't exist anymore. Please Exit!");
+            return;
+        }
+        boolean canDelete = (boolean) oInputStream.readObject();
+        if (!canDelete) {
+            System.out.println("You can't delete a channel from this server!");
+            return;
+        }
+        ArrayList<String> channels = (ArrayList<String>) oInputStream.readObject();
+        if (channels.size() == 0) {
+            System.out.println("There is no channel in this server!");
+            return;
+        }
+        for (String string : channels) {
+            System.out.println("- " + string);
+        }
+        scanner.nextLine();
+        System.out.print("Enter the name of the channel you want to delete:\n> ");
+        String channelName = scanner.nextLine();
+        outputStream.writeObject(channelName);
+        boolean doesChannelExist = (boolean) oInputStream.readObject();
+        if (!doesChannelExist) {
+            System.out.println("There is no channel with this name in this server!");
+            return;
+        }
+        System.out.println("The channel is deleted!");
     }
 }

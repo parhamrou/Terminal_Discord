@@ -37,5 +37,7 @@ public enum Request implements Serializable {
     CHECK_FILE,
     MAP_ROLE,
     CHECK_ROLE_NAME,
-    DELETE_SERVER
+    DELETE_SERVER,
+    CHANGE_SERVER_NAME,
+    DELETE_CHANNEL,
 }

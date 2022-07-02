@@ -1,9 +1,10 @@
 package CommonClasses;
 
+import java.io.*;
 import java.time.format.*;
 import java.util.*;
 
-public class FileMessage extends Message{
+public class FileMessage extends Message implements Serializable {
 
     private byte[] content;
     private String fileName;

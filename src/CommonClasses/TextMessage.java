@@ -1,8 +1,9 @@
 package CommonClasses;
 
+import java.io.*;
 import java.time.format.*;
 
-public class TextMessage extends Message {
+public class TextMessage extends Message implements Serializable {
 
     private final String text;
 

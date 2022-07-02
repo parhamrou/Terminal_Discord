@@ -68,6 +68,7 @@ public abstract class ChatHandler {
 
     private void saveFile() {
         try {
+            Thread.sleep(200);
             Socket currentSocket = chat.getCurrentSocket();
             ObjectInputStream objectInputStream = new ObjectInputStream(currentSocket.getInputStream());
             FileMessage fileMessage = (FileMessage) objectInputStream.readObject();
@@ -84,6 +85,8 @@ public abstract class ChatHandler {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

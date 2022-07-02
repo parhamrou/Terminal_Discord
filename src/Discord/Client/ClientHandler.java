@@ -56,6 +56,8 @@ public class ClientHandler {
                         break;
                     case 3:
                         isUserEntered = false;
+                        oOutputStream.writeObject(Request.EXIT);
+                        socket.close();
                         return;
                 }
                 if (isUserEntered) {
@@ -231,7 +233,8 @@ public class ClientHandler {
             oOutputStream.writeObject(PVName); // sending server name
             boolean isSuccessful = (boolean) oInputStream.readObject();
             if (isSuccessful) {
-                PVHandler pvHandler = new PVHandler((int) oInputStream.readObject(), user);
+                Integer portNumber = (Integer) oInputStream.readObject();
+                PVHandler pvHandler = new PVHandler(portNumber, user);
                 pvHandler.start();
             } else {
                 System.out.println("There is no PVChat with this name!");

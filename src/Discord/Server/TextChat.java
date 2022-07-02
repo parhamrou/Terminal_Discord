@@ -8,26 +8,31 @@ import java.util.*;
 
 public abstract class TextChat implements Serializable{
 
-    protected Map<Integer, ChatHandler> chatHandlers; // must update
+    protected transient Map<Integer, ChatHandler> chatHandlers; // must update
     protected ArrayList<Message> messages;
     protected ArrayList<String> filePaths;
-    private static Socket currentSocket;
+    private transient Integer portNumber;
+    protected transient ServerSocket serverSocket;
+    private boolean isActive;
+    private transient static Socket currentSocket;
 
 
     public TextChat() {
         messages = new ArrayList<>();
         filePaths = new ArrayList<>();
-        chatHandlers = new HashMap<>();
+        isActive = true;
     }
 
 
     public static void fileServerSocketListen() {
         try {
-            ServerSocket serverSocket = new ServerSocket(8000);
-            Socket socket;
+            ServerSocket tempServerSocket = new ServerSocket(7000);
+            DataManager.addServerSocket(tempServerSocket);
+            Socket tempSocket;
             while (true) {
-                socket = serverSocket.accept();
-                currentSocket = socket;
+                tempSocket = tempServerSocket.accept();
+                System.out.println("There is a request for working with files!");
+                currentSocket = tempSocket;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -36,6 +41,14 @@ public abstract class TextChat implements Serializable{
 
     public synchronized static Socket getCurrentSocket() {
         return currentSocket;
+    }
+
+    public void setPortNumber(Integer portNumber) {
+        this.portNumber = portNumber;
+    }
+
+    public synchronized Integer getPortNumber() {
+        return portNumber;
     }
 
 
@@ -80,4 +93,13 @@ public abstract class TextChat implements Serializable{
         }
         return null;
     }
+
+    public void inActiveChat() {
+        isActive = false;
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
 }

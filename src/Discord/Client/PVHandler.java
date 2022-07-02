@@ -38,6 +38,7 @@ public class PVHandler extends ChatHandler {
                         }
                         loadChat();
                         scanner.nextLine();
+                        outputStream.writeObject(Request.ENTER_CHAT);
                         runThreads();
                         break;
                     case 2:
@@ -45,6 +46,7 @@ public class PVHandler extends ChatHandler {
                         break;
                     case 3:
                         outputStream.writeObject(Request.EXIT);
+                        socket.close();
                         return;
                 }
             } catch (InputMismatchException e) {

@@ -1,9 +1,6 @@
 package Discord.Server;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import CommonClasses.*;
+import org.w3c.dom.ls.*;
 
 /**
  * This class loads data from the files just after the server starts to work.
@@ -19,64 +17,87 @@ import CommonClasses.*;
  */
 public class DataManager {
 
-    private static final String usersFileAddress = "D:\\APFinalProject\\DataFiles\\uesrs.DAT";
-    private static final String serversFileAddress = "D:\\APFinalProject\\DataFiles\\servers.DAT";
-    
+    private static final String usersFileAddress = "D:\\APFinalProject\\DataFiles\\data.DAT";
+
     private static List<User> users = Collections.synchronizedList(new ArrayList<>());
     private static List<Server> servers = Collections.synchronizedList(new ArrayList<>());
-
-    private static FileInputStream fInputStream;
-    private static ObjectInputStream objectInputStream;
-
+    private static List<ServerSocket> serverSockets = Collections.synchronizedList(new ArrayList<>());
+    private static List<PVChat>  pvChats = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * This \method calls the methods which have to load data from multiple files.
      */
-    public static void LoadData() {
+    public static void initialize() {
         try {
             readUsers();
+            runPVChats();
             runChannels();
-        } catch (FileNotFoundException e) {
-            System.out.println("There is no file with this address!");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("There is a I/O problem!");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+            System.out.println("Ready to go...");
+        }catch (ClassNotFoundException e) {
             System.out.println(e);
             e.printStackTrace();
         }
     }
 
-
-    private static void readUsers() throws ClassNotFoundException, IOException {
-        fInputStream = new FileInputStream(usersFileAddress);
-        objectInputStream = new ObjectInputStream(fInputStream);
-        while (true) {
-            User tempUser = (User) objectInputStream.readObject();
-            if (tempUser == null) {
-                break;
-            }
-            users.add(tempUser);
-        }
-        objectInputStream.close();
-        fInputStream.close();
+    public static void finalization() {
+        closeServerSockets();
+        writeUsers();
+        System.out.println("Finished...");
     }
 
 
-    private static void readServers() throws IOException, ClassNotFoundException {
-        fInputStream = new FileInputStream(serversFileAddress);
-        objectInputStream = new ObjectInputStream(fInputStream);
-        while (true) {
-            Server tempServer = (Server) objectInputStream.readObject();
-            if (tempServer == null) {
-                break;
+    private static void readUsers() throws ClassNotFoundException {
+        try {
+            FileInputStream fInputStream = new FileInputStream(usersFileAddress);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fInputStream);
+            while (true) {
+                User tempUser = (User) objectInputStream.readObject();
+                if (tempUser == null) {
+                    break;
+                }
+                users.add(tempUser);
+                ArrayList<PVChat> PVChats = tempUser.GetPvChats();
+                for (PVChat pvChat : PVChats) {
+                    if (!pvChats.contains(pvChat)) {
+                        pvChats.add(pvChat);
+                    }
+                }
+                ArrayList<Server> Servers = tempUser.getServers();
+                for (Server server : Servers) {
+                    if (!servers.contains(server)) {
+                        servers.add(server);
+                    }
+                }
             }
-            servers.add(tempServer);
+            fInputStream.close();
+            objectInputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (EOFException e) {
+            System.out.println("End of reading!");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        objectInputStream.close();
-        fInputStream.close();
     }
+
+
+    private static void writeUsers() {
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(usersFileAddress);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            for (User user : users) {
+                objectOutputStream.writeObject(user);
+            }
+            fileOutputStream.close();
+            objectOutputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private static void runChannels() {
         for (Server server : servers) {
@@ -84,13 +105,23 @@ public class DataManager {
         }
     }
 
+
+    private static void runPVChats() {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        for (PVChat pvChat : pvChats) {
+            executorService.execute(pvChat);
+            System.out.println("ran");
+        }
+    }
+
+
     public synchronized static boolean isServerNameDuplicated(String serverName) {
         for (Server server : servers) {
             if (server.getName().equalsIgnoreCase(serverName)) {
-                return  true;
+                return true;
             }
         }
-        return  false;
+        return false;
     }
 
 
@@ -138,6 +169,20 @@ public class DataManager {
         return true;
     }
 
+    public synchronized static void addServerSocket(ServerSocket serverSocket) {
+        serverSockets.add(serverSocket);
+    }
+
+    private static void closeServerSockets() {
+        for (ServerSocket serverSocket : serverSockets) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public synchronized static User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equalsIgnoreCase(username)) {
@@ -149,9 +194,13 @@ public class DataManager {
 
 
     public synchronized static void addServer(Server server) {
+        System.out.println("The server is added!");
         servers.add(server);
     }
 
+    public synchronized static void addPVChat(PVChat pvChat) {
+        pvChats.add(pvChat);
+    }
     public static void removeServer(Server server) {
         servers.remove(server);
     }

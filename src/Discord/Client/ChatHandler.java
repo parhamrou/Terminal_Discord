@@ -33,8 +33,7 @@ public abstract class ChatHandler {
 
     private void serverReader() throws ClassNotFoundException {
         try {
-            Request request;
-            Message message = null;
+            Message message;
             while (true) {
                 message = (Message) oInputStream.readObject();
                 if (message.getText().equalsIgnoreCase("#exit")) {
@@ -51,14 +50,13 @@ public abstract class ChatHandler {
 
     private void serverWriter () throws ClassNotFoundException {
         try {
-            Message message = null;
             // try with creating a new scanner :/
             String messageText = scanner.nextLine();
             while (!messageText.equalsIgnoreCase("#exit")) {
                 if (messageText.equalsIgnoreCase("#send file")) {
                     outputStream.writeObject(Request.SEND_FILE);
                     Socket socket = new Socket("localhost", 7000); // connecting to the file serverSocket
-                    System.out.println("Enter the path of the file:\n> ");
+                    System.out.print("Enter the path of the file:\n> ");
                     String filePath = scanner.nextLine();
                     new Thread(new Runnable() { // this thread gets sends file in different thread
                         @Override
@@ -85,7 +83,6 @@ public abstract class ChatHandler {
     }
 
     public void runThreads () throws IOException, ClassNotFoundException {
-        outputStream.writeObject(Request.ENTER_CHAT);
         System.out.println("Exit: '#exit', Send file: '#send file', Download file: #download file");
         // this thread is for reading the messages from other users and printing them.
         Thread read = new Thread(new Runnable() {

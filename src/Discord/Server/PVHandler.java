@@ -54,6 +54,7 @@ public class PVHandler extends ChatHandler implements Runnable, Serializable{
                         objectOutputStream.close();
                         objectInputStream.close();
                         pvChat.removeHandlerMap(handler_ID);
+                        socket.close();
                         return;
                 }
             } catch (ClassNotFoundException e) {
